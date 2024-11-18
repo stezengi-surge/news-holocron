@@ -10,10 +10,10 @@ export async function GET(request, { params }) {
     );
   }
 
-    const response = await fetch(
-        `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${process.env.NEWSAPI_API_KEY}`
-    );
-    const data = await response.json();
+  const response = await fetch(
+      `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${process.env.NEWSAPI_API_KEY}`
+  );
+  const data = await response.json();
  
   return Response.json({ data })
 }

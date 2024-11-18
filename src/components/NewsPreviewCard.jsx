@@ -1,13 +1,14 @@
-import Image from 'next/image';
-import Link from "next/link";
+import moment from 'moment';
 
 const NewsPreviewCard = ({ article }) => {
   return (
     <div className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96">
-    <div className="relative h-56 m-2.5 overflow-hidden text-white rounded-md">
+    <div className="relative overflow-hidden text-white rounded-md">
         <img src={article.urlToImage} alt={article.title} />
     </div>
     <div className="p-4">
+    <span className="text-sm text-gray-500 dark:text-gray-400">{ moment(article.publishedAt).format("MMMM Do, YYYY h:mm:ss A") }</span>
+      
       <h6 className="mb-2 text-slate-800 text-xl font-semibold">
         {article.title}
       </h6>
