@@ -50,7 +50,6 @@ export default function Home() {
     return fetchArticles();
   }, [submittedQuery]);
 
-  // Resolve the memoized promise and update state
   useEffect(() => {
     memoizedArticles.then((fetchedArticles) => {
       setArticles(fetchedArticles);
