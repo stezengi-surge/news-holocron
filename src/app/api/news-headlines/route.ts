@@ -1,4 +1,5 @@
 export const dynamic = 'force-static'
+import { NextResponse } from 'next/server';
  
 export async function GET() {
     const response = await fetch(
@@ -6,5 +7,5 @@ export async function GET() {
     );
     const data = await response.json();
  
-  return Response.json({ data })
+  return NextResponse.json({ data })
 }

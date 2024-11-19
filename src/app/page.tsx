@@ -1,50 +1,66 @@
 "use client"; // Add this at the top
 
-import Image from "next/image";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, FormEvent } from "react";
 import NewsPreviewCard from "../components/NewsPreviewCard";
+import { Article } from '@/types/article';
 
 export default function Home() {
-  const [news, setNews] = useState([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [dependency, setDependency] = useState(0);
   const [hasError, setHasError] = useState(false);
+  const [submittedQuery, setSubmittedQuery] = useState('');
 
-  const fetchArticles = useMemo(() => async () => {
-    setLoading(true);
-    try {
-      let response = null;
-      if (!query.trim()){
-        response = await fetch(`/api/news-headlines`);
-      } else {
-        response = await fetch(`/api/news-search/${encodeURIComponent(query)}`
-        );
-      }
-      if (response == null || !response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const responseDate = await response.json();
-      const articles = responseDate.data.articles || [];
-      const completeArticles = articles.filter(article => article.urlToImage != null);
-      setNews(completeArticles);
-      setLoading(false);
-      return completeArticles;
-    } catch (error) {
-      setHasError(true);
-      console.error("Error fetching news:", error);
-      setLoading(false);
-    } 
-  }, [dependency]);
+  const queryRef = useRef(query);
 
-  // Fetch the product list on component mount
+  useMemo(() => {
+    queryRef.current = query; 
+  }, [query]);
+
+  const memoizedArticles = useMemo(() => {
+    const fetchArticles = async () => {
+      setLoading(true);
+      try {
+        let response;
+        if (!submittedQuery.trim()) {
+          response = await fetch(`/api/news-headlines`);
+        } else {
+          response = await fetch(`/api/news-search/${encodeURIComponent(submittedQuery)}`);
+        }
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const responseData = await response.json();
+        const articles = responseData.data.articles || [];
+        const completeArticles = articles.filter((article: Article) => article.urlToImage != null);
+
+        setHasError(false);
+        return completeArticles;
+      } catch (error) {
+        setHasError(true);
+        console.error('Error fetching news:', error);
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return fetchArticles();
+  }, [submittedQuery]);
+
+  // Resolve the memoized promise and update state
   useEffect(() => {
-    fetchArticles();
-  }, [fetchArticles]);
+    memoizedArticles.then((fetchedArticles) => {
+      setArticles(fetchedArticles);
+    });
+  }, [memoizedArticles]);
 
-  const handleSearch = async (e) => {
-    e.preventDefault(); // Prevent form submission reload
-    setDependency(dependency + 1)
+  const handleSearch = async (event: FormEvent) => {
+    // Prevent form submission reload
+    event.preventDefault(); 
+    setSubmittedQuery(query);
   }
 
   return (
@@ -98,7 +114,7 @@ export default function Home() {
         <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
         </div> :
         <div className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] ps-4">
-          {news.map((article, index) => (
+          {articles.map((article, index) => (
             <NewsPreviewCard key={index} article={article} />
           ))}
         </div>
